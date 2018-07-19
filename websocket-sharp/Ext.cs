@@ -55,7 +55,9 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using WebSocketSharp.Net;
 using WebSocketSharp.Net.WebSockets;
+#if CLIENT_ONLY != true
 using WebSocketSharp.Server;
+#endif
 
 namespace WebSocketSharp
 {
@@ -64,15 +66,15 @@ namespace WebSocketSharp
   /// </summary>
   public static class Ext
   {
-    #region Private Fields
+#region Private Fields
 
     private static readonly byte[] _last = new byte[] { 0x00 };
     private static readonly int    _retry = 5;
     private const string           _tspecials = "()<>@,;:\\\"/[]?={} \t";
 
-    #endregion
+#endregion
 
-    #region Private Methods
+#region Private Methods
 
     private static byte[] compress (this byte[] data)
     {
@@ -166,9 +168,9 @@ namespace WebSocketSharp
         action ();
     }
 
-    #endregion
+#endregion
 
-    #region Internal Methods
+#region Internal Methods
 
     internal static byte[] Append (this ushort code, string reason)
     {
@@ -1208,9 +1210,9 @@ namespace WebSocketSharp
         });
     }
 
-    #endregion
+#endregion
 
-    #region Public Methods
+#region Public Methods
 
     /// <summary>
     /// Emits the specified <see cref="EventHandler"/> delegate if it isn't <see langword="null"/>.
@@ -2046,6 +2048,6 @@ namespace WebSocketSharp
       output.Close ();
     }
 
-    #endregion
+#endregion
   }
 }
