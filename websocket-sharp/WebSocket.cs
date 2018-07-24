@@ -50,6 +50,9 @@ using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
+#if !NET35
+using System.Threading.Tasks;
+#endif
 using WebSocketSharp.Net;
 using WebSocketSharp.Net.WebSockets;
 
@@ -291,6 +294,7 @@ namespace WebSocketSharp
       }
     }
 
+#if CLIENT_ONLY != true
     // As server
     internal Func<WebSocketContext, string> CustomHandshakeRequestChecker {
       get {
@@ -301,7 +305,8 @@ namespace WebSocketSharp
         _handshakeRequestChecker = value;
       }
     }
-
+#endif
+    
     internal bool HasMessage {
       get {
         lock (_forMessageEventQueue)
@@ -309,6 +314,7 @@ namespace WebSocketSharp
       }
     }
 
+#if CLIENT_ONLY != true
     // As server
     internal bool IgnoreExtensions {
       get {
@@ -319,6 +325,7 @@ namespace WebSocketSharp
         _ignoreExtensions = value;
       }
     }
+#endif
 
     internal bool IsConnected {
       get {
@@ -802,6 +809,7 @@ namespace WebSocketSharp
 
     #region Private Methods
 
+#if CLIENT_ONLY != true
     // As server
     private bool accept ()
     {
@@ -858,7 +866,7 @@ namespace WebSocketSharp
         return true;
       }
     }
-
+  
     // As server
     private bool acceptHandshake ()
     {
@@ -905,6 +913,7 @@ namespace WebSocketSharp
 
       return sendHttpResponse (createHandshakeResponse ());
     }
+#endif
 
     private bool canSet (out string message)
     {
@@ -1172,9 +1181,14 @@ namespace WebSocketSharp
     )
     {
       Action<PayloadData, bool, bool, bool> closer = close;
+#if NET35
       closer.BeginInvoke (
         payloadData, send, receive, received, ar => closer.EndInvoke (ar), null
       );
+#else
+      var asyncTask = Task.Factory.StartNew(() => closer(payloadData, send, receive, received));
+      asyncTask.Wait();
+#endif
     }
 
     private bool closeHandshake (byte[] frameAsBytes, bool receive, bool received)
@@ -1551,8 +1565,11 @@ namespace WebSocketSharp
 
         e = _messageEventQueue.Dequeue ();
       }
-
+#if NET35
       _message.BeginInvoke (e, ar => _message.EndInvoke (ar), null);
+#else
+      Task.Factory.StartNew(() => _message(e));
+#endif
     }
 
     private bool ping (byte[] data)
@@ -1777,6 +1794,7 @@ namespace WebSocketSharp
       return false;
     }
 
+#if CLIENT_ONLY != true    
     // As server
     private void refuseHandshake (CloseStatusCode code, string reason)
     {
@@ -1799,7 +1817,8 @@ namespace WebSocketSharp
         _logger.Debug (ex.ToString ());
       }
     }
-
+#endif
+    
     // As client
     private void releaseClientResources ()
     {
@@ -1953,6 +1972,7 @@ namespace WebSocketSharp
     private void sendAsync (Opcode opcode, Stream stream, Action<bool> completed)
     {
       Func<Opcode, Stream, bool> sender = send;
+#if NET35
       sender.BeginInvoke (
         opcode,
         stream,
@@ -1972,6 +1992,22 @@ namespace WebSocketSharp
         },
         null
       );
+#else
+      var asyncTask = Task<bool>.Factory.StartNew(() => sender(opcode, stream));
+      try
+      {
+          var sent = asyncTask.Result;
+          completed?.Invoke(sent);
+      }
+      catch (Exception ex)
+      {
+        _logger.Error (ex.ToString ());
+        error (
+          "An error has occurred during the callback for an async send.",
+          ex
+        );
+      }
+#endif
     }
 
     private bool sendBytes (byte[] bytes)
@@ -2352,6 +2388,7 @@ namespace WebSocketSharp
       return Convert.ToBase64String (src);
     }
 
+#if CLIENT_ONLY != true
     // As server
     internal void InternalAccept ()
     {
@@ -2453,11 +2490,12 @@ namespace WebSocketSharp
         send (opcode, found, _compression != CompressionMethod.None);
       }
     }
-
+#endif
     #endregion
 
     #region Public Methods
 
+#if CLIENT_ONLY != true
     /// <summary>
     /// Accepts the handshake request.
     /// </summary>
@@ -2558,6 +2596,7 @@ namespace WebSocketSharp
         null
       );
     }
+#endif
 
     /// <summary>
     /// Closes the connection.
@@ -3289,6 +3328,7 @@ namespace WebSocketSharp
       }
 
       Func<bool> connector = connect;
+#if NET35      
       connector.BeginInvoke (
         ar => {
           if (connector.EndInvoke (ar))
@@ -3296,6 +3336,13 @@ namespace WebSocketSharp
         },
         null
       );
+#else
+      var asyncTask = Task<bool>.Factory.StartNew(() => connector());
+      if (asyncTask.Result)
+      {
+        open();
+      }
+#endif
     }
 
     /// <summary>
