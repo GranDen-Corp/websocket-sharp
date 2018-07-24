@@ -183,6 +183,7 @@ namespace WebSocketSharp
       init ();
     }
 
+#if CLIENT_ONLY != true
     // As server
     internal WebSocket (TcpListenerWebSocketContext context, string protocol)
     {
@@ -198,6 +199,7 @@ namespace WebSocketSharp
 
       init ();
     }
+#endif
 
     #endregion
 
@@ -932,6 +934,7 @@ namespace WebSocketSharp
       return true;
     }
 
+#if CLIENT_ONLY != true
     // As server
     private bool checkHandshakeRequest (
       WebSocketContext context, out string message
@@ -989,6 +992,7 @@ namespace WebSocketSharp
 
       return true;
     }
+#endif
 
     // As client
     private bool checkHandshakeResponse (HttpResponse response, out string message)
@@ -1321,6 +1325,7 @@ namespace WebSocketSharp
       return null;
     }
 
+#if CLIENT_ONLY != true
     // As server
     private HttpResponse createHandshakeFailureResponse (HttpStatusCode code)
     {
@@ -1329,6 +1334,7 @@ namespace WebSocketSharp
 
       return ret;
     }
+#endif
 
     // As client
     private HttpRequest createHandshakeRequest ()
@@ -1369,6 +1375,7 @@ namespace WebSocketSharp
       return ret;
     }
 
+#if CLIENT_ONLY != true
     // As server
     private HttpResponse createHandshakeResponse ()
     {
@@ -1408,6 +1415,7 @@ namespace WebSocketSharp
       lock (_forMessageEventQueue)
         return _messageEventQueue.Count > 0 ? _messageEventQueue.Dequeue () : null;
     }
+#endif
 
     // As client
     private void doHandshake ()
@@ -1726,6 +1734,7 @@ namespace WebSocketSharp
                      : processUnsupportedFrame (frame);
     }
 
+#if CLIENT_ONLY != true
     // As server
     private void processSecWebSocketExtensionsClientHeader (string value)
     {
@@ -1763,6 +1772,7 @@ namespace WebSocketSharp
       buff.Length = len - 2;
       _extensions = buff.ToString ();
     }
+#endif
 
     // As client
     private void processSecWebSocketExtensionsServerHeader (string value)
@@ -1775,6 +1785,7 @@ namespace WebSocketSharp
       _extensions = value;
     }
 
+#if CLIENT_ONLY != true    
     // As server
     private void processSecWebSocketProtocolClientHeader (
       IEnumerable<string> values
@@ -1785,6 +1796,7 @@ namespace WebSocketSharp
 
       _protocol = null;
     }
+#endif
 
     private bool processUnsupportedFrame (WebSocketFrame frame)
     {
@@ -1854,14 +1866,19 @@ namespace WebSocketSharp
 
     private void releaseResources ()
     {
+  #if CLIENT_ONLY != true
       if (_client)
         releaseClientResources ();
       else
         releaseServerResources ();
+  #else
+      releaseClientResources();
+  #endif
 
       releaseCommonResources ();
     }
 
+#if CLIENT_ONLY != true
     // As server
     private void releaseServerResources ()
     {
@@ -1873,6 +1890,7 @@ namespace WebSocketSharp
       _stream = null;
       _context = null;
     }
+#endif
 
     private bool send (Opcode opcode, Stream stream)
     {
@@ -2097,6 +2115,7 @@ namespace WebSocketSharp
       return res;
     }
 
+#if CLIENT_ONLY != true
     // As server
     private bool sendHttpResponse (HttpResponse response)
     {
@@ -2108,6 +2127,7 @@ namespace WebSocketSharp
 
       return sendBytes (response.ToByteArray ());
     }
+#endif
 
     // As client
     private void sendProxyConnectRequest ()
@@ -2302,6 +2322,7 @@ namespace WebSocketSharp
 
     #region Internal Methods
 
+#if CLIENT_ONLY != true
     // As server
     internal void Close (HttpResponse response)
     {
@@ -2368,6 +2389,7 @@ namespace WebSocketSharp
         _logger.Error (ex.ToString ());
       }
     }
+#endif
 
     // As client
     internal static string CreateBase64Key ()
