@@ -1190,11 +1190,11 @@ namespace WebSocketSharp
         payloadData, send, receive, received, ar => closer.EndInvoke (ar), null
       );
 #else
-      var asyncTask = Task.Factory.StartNew(() => closer(payloadData, send, receive, received));
-      asyncTask.Wait();
+      Task.Factory.StartNew(() => closer(payloadData, send, receive, received));
 #endif
     }
 
+#if CLIENT_ONLY != true
     private bool closeHandshake (byte[] frameAsBytes, bool receive, bool received)
     {
       var sent = frameAsBytes != null && sendBytes (frameAsBytes);
@@ -1213,6 +1213,7 @@ namespace WebSocketSharp
 
       return ret;
     }
+  #endif
 
     private bool closeHandshake (
       PayloadData payloadData, bool send, bool receive, bool received
@@ -1576,7 +1577,7 @@ namespace WebSocketSharp
 #if NET35
       _message.BeginInvoke (e, ar => _message.EndInvoke (ar), null);
 #else
-      Task.Factory.StartNew(() => _message(e));
+      Task.Factory.StartNew(() => _message(e)).ConfigureAwait(false).GetAwaiter().GetResult();
 #endif
     }
 
@@ -2014,7 +2015,7 @@ namespace WebSocketSharp
       var asyncTask = Task<bool>.Factory.StartNew(() => sender(opcode, stream));
       try
       {
-          var sent = asyncTask.Result;
+          var sent = asyncTask.ConfigureAwait(false).GetAwaiter().GetResult();
           completed?.Invoke(sent);
       }
       catch (Exception ex)
@@ -3360,7 +3361,7 @@ namespace WebSocketSharp
       );
 #else
       var asyncTask = Task<bool>.Factory.StartNew(() => connector());
-      if (asyncTask.Result)
+      if (asyncTask.ConfigureAwait(false).GetAwaiter().GetResult())
       {
         open();
       }

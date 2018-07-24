@@ -181,6 +181,7 @@ namespace WebSocketSharp.Net
             var ar = this;
             _callback(ar);
           });
+          asyncTask.ConfigureAwait(false).GetAwaiter().GetResult();
 #endif
         }
       }
