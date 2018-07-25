@@ -1482,7 +1482,7 @@ namespace WebSocketSharp
         _sslConfig = new ClientSslConfiguration (_uri.DnsSafeHost);
       
 #if !NET35 && USE_TLS12 == true
-      _sslConfig.EnabledSslProtocols = _sslConfig.EnabledSslProtocols | System.Security.Authentication.SslProtocols.Tls12;
+      _sslConfig.EnabledSslProtocols = _sslConfig.EnabledSslProtocols | System.Security.Authentication.SslProtocols.Tls11 | System.Security.Authentication.SslProtocols.Tls12;
 #endif
       
       return _sslConfig;
