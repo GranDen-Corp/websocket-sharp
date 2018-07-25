@@ -1480,7 +1480,11 @@ namespace WebSocketSharp
     {
       if (_sslConfig == null)
         _sslConfig = new ClientSslConfiguration (_uri.DnsSafeHost);
-
+      
+#if !NET35 && USE_TLS12 == true
+      _sslConfig.EnabledSslProtocols = _sslConfig.EnabledSslProtocols | System.Security.Authentication.SslProtocols.Tls12;
+#endif
+      
       return _sslConfig;
     }
 
@@ -1788,7 +1792,7 @@ namespace WebSocketSharp
       _extensions = value;
     }
 
-#if CLIENT_ONLY != true    
+#if CLIENT_ONLY != true
     // As server
     private void processSecWebSocketProtocolClientHeader (
       IEnumerable<string> values
@@ -1809,7 +1813,7 @@ namespace WebSocketSharp
       return false;
     }
 
-#if CLIENT_ONLY != true    
+#if CLIENT_ONLY != true
     // As server
     private void refuseHandshake (CloseStatusCode code, string reason)
     {
@@ -1869,14 +1873,14 @@ namespace WebSocketSharp
 
     private void releaseResources ()
     {
-  #if CLIENT_ONLY != true
+#if CLIENT_ONLY != true
       if (_client)
         releaseClientResources ();
       else
         releaseServerResources ();
-  #else
+#else
       releaseClientResources();
-  #endif
+#endif
 
       releaseCommonResources ();
     }
@@ -2321,9 +2325,9 @@ namespace WebSocketSharp
       return value == null || value == _version;
     }
 
-    #endregion
+#endregion
 
-    #region Internal Methods
+#region Internal Methods
 
 #if CLIENT_ONLY != true
     // As server
@@ -2516,9 +2520,9 @@ namespace WebSocketSharp
       }
     }
 #endif
-    #endregion
+#endregion
 
-    #region Public Methods
+#region Public Methods
 
 #if CLIENT_ONLY != true
     /// <summary>
@@ -3353,7 +3357,7 @@ namespace WebSocketSharp
       }
 
       Func<bool> connector = connect;
-#if NET35      
+#if NET35
       connector.BeginInvoke (
         ar => {
           if (connector.EndInvoke (ar))
@@ -4146,9 +4150,9 @@ namespace WebSocketSharp
       }
     }
 
-    #endregion
+#endregion
 
-    #region Explicit Interface Implementations
+#region Explicit Interface Implementations
 
     /// <summary>
     /// Closes the connection and releases all associated resources.
@@ -4167,6 +4171,6 @@ namespace WebSocketSharp
       close (1001, String.Empty);
     }
 
-    #endregion
+#endregion
   }
 }
