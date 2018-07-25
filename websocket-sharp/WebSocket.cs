@@ -95,8 +95,10 @@ namespace WebSocketSharp
     private bool                           _fragmentsCompressed;
     private Opcode                         _fragmentsOpcode;
     private const string                   _guid = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+#if CLIENT_ONLY != true
     private Func<WebSocketContext, string> _handshakeRequestChecker;
     private bool                           _ignoreExtensions;
+#endif
     private bool                           _inContinuation;
     private volatile bool                  _inMessage;
     private volatile Logger                _logger;
