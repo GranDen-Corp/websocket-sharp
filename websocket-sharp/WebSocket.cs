@@ -287,12 +287,52 @@ namespace WebSocketSharp
 
       init ();
     }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="url"></param>
+        /// <param name="logger"></param>
+        /// <param name="protocols"></param>
+    public WebSocket(string url, Logger logger, params string[] protocols)
+    {
+        if (url == null)
+        {
+            throw new ArgumentNullException("url");
+        }
 
-    #endregion
+        if (url.Length == 0)
+        {
+            throw new ArgumentException("An empty string.", "url");
 
-    #region Internal Properties
+        }
 
-    internal CookieCollection CookieCollection {
+            string msg;
+          if (!url.TryCreateWebSocketUri(out _uri, out msg))
+              throw new ArgumentException(msg, "url");
+
+          if (protocols != null && protocols.Length > 0)
+          {
+              if (!checkProtocols(protocols, out msg))
+                  throw new ArgumentException(msg, "protocols");
+
+              _protocols = protocols;
+          }
+
+          _base64Key = CreateBase64Key();
+          _client = true;
+          _logger = logger;
+          _message = messagec;
+          _secure = _uri.Scheme == "wss";
+          _waitTime = TimeSpan.FromSeconds(5);
+
+          init();
+     }
+
+        #endregion
+
+        #region Internal Properties
+
+        internal CookieCollection CookieCollection {
       get {
         return _cookies;
       }
