@@ -287,12 +287,61 @@ namespace WebSocketSharp
 
       init ();
     }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="url"></param>
-        /// <param name="logger"></param>
-        /// <param name="protocols"></param>
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="WebSocket"/> class with
+    /// <paramref name="url"/> and a prepared <paramref name="logger"/> 
+    ///  and optionally <paramref name="protocols"/>.
+    /// </summary>
+    /// <param name="url">
+    ///   <para>
+    ///   A <see cref="string"/> that specifies the URL to which to connect.
+    ///   </para>
+    ///   <para>
+    ///   The scheme of the URL must be ws or wss.
+    ///   </para>
+    ///   <para>
+    ///   The new instance uses a secure connection if the scheme is wss.
+    ///   </para>
+    /// </param>
+    /// <param name="logger">custom logger</param>
+    /// <param name="protocols">
+    ///   <para>
+    ///   An array of <see cref="string"/> that specifies the names of
+    ///   the subprotocols if necessary.
+    ///   </para>
+    ///   <para>
+    ///   Each value of the array must be a token defined in
+    ///   <see href="http://tools.ietf.org/html/rfc2616#section-2.2">
+    ///   RFC 2616</see>.
+    ///   </para>
+    /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="url"/> is <see langword="null"/>.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    ///   <para>
+    ///   <paramref name="url"/> is an empty string.
+    ///   </para>
+    ///   <para>
+    ///   -or-
+    ///   </para>
+    ///   <para>
+    ///   <paramref name="url"/> is an invalid WebSocket URL string.
+    ///   </para>
+    ///   <para>
+    ///   -or-
+    ///   </para>
+    ///   <para>
+    ///   <paramref name="protocols"/> contains a value that is not a token.
+    ///   </para>
+    ///   <para>
+    ///   -or-
+    ///   </para>
+    ///   <para>
+    ///   <paramref name="protocols"/> contains a value twice.
+    ///   </para>
+    /// </exception>
     public WebSocket(string url, Logger logger, params string[] protocols)
     {
         if (url == null)
@@ -306,17 +355,19 @@ namespace WebSocketSharp
 
         }
 
-            string msg;
-          if (!url.TryCreateWebSocketUri(out _uri, out msg))
+        string msg;
+      if (!url.TryCreateWebSocketUri(out _uri, out msg))
+      {
               throw new ArgumentException(msg, "url");
+      }
 
-          if (protocols != null && protocols.Length > 0)
-          {
-              if (!checkProtocols(protocols, out msg))
+      if (protocols != null && protocols.Length > 0)
+      {
+          if (!checkProtocols(protocols, out msg))
                   throw new ArgumentException(msg, "protocols");
 
               _protocols = protocols;
-          }
+      }
 
           _base64Key = CreateBase64Key();
           _client = true;
@@ -326,7 +377,7 @@ namespace WebSocketSharp
           _waitTime = TimeSpan.FromSeconds(5);
 
           init();
-     }
+    }
 
         #endregion
 
